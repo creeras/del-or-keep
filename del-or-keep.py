@@ -7,7 +7,7 @@ import pygame
 class FileReviewApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("File Review App")
+        self.root.title("Del or Keep")
         self.root.geometry("800x600")  # 창 크기 조정
         self.root.resizable(True, True)  # 창 크기 고정
 
