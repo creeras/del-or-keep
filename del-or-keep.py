@@ -9,7 +9,7 @@ class FileReviewApp:
         self.root = root
         self.root.title("File Review App")
         self.root.geometry("800x600")  # 창 크기 조정
-        self.root.resizable(False, False)  # 창 크기 고정
+        self.root.resizable(True, True)  # 창 크기 고정
 
         self.folder_path = ""
         self.files = []
