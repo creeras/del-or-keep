@@ -39,6 +39,9 @@ class FileReviewApp:
         self.delete_button = tk.Button(button_frame, text="Delete", command=self.delete_file, state=tk.DISABLED, font=("Helvetica", 24), width=10, height=2, bg="red")
         self.delete_button.grid(row=0, column=2, padx=20)
 
+        self.back_button = tk.Button(button_frame, text="Back", command=self.go_back, state=tk.DISABLED, font=("Helvetica", 24), width=10, height=2, bg="yellow")
+        self.back_button.grid(row=0, column=3, padx=20)
+
     def select_folder(self):
         self.folder_path = filedialog.askdirectory()
         if self.folder_path:
@@ -50,6 +53,7 @@ class FileReviewApp:
                 self.keep_button.config(state=tk.NORMAL)
                 self.music_button.config(state=tk.NORMAL)
                 self.delete_button.config(state=tk.NORMAL)
+                self.back_button.config(state=tk.NORMAL)
             else:
                 messagebox.showinfo("Info", "The selected folder is empty.")
 
@@ -62,6 +66,7 @@ class FileReviewApp:
             self.keep_button.config(state=tk.DISABLED)
             self.music_button.config(state=tk.DISABLED)
             self.delete_button.config(state=tk.DISABLED)
+            self.back_button.config(state=tk.DISABLED)
 
     def keep_file(self):
         self.current_file_index += 1
@@ -83,10 +88,14 @@ class FileReviewApp:
             self.music_player.stop()
         current_file = self.files[self.current_file_index]
         file_path = os.path.join(self.folder_path, current_file)
-        self.music_player.unload() # 파일 재생을 중지하고 파일을 닫음
         os.remove(file_path)
         self.current_file_index += 1
         self.update_file_label()
+
+    def go_back(self):
+        if self.current_file_index > 0:
+            self.current_file_index -= 1
+            self.update_file_label()
 
 if __name__ == "__main__":
     root = tk.Tk()
