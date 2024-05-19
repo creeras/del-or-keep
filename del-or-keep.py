@@ -83,6 +83,7 @@ class FileReviewApp:
             self.music_player.stop()
         current_file = self.files[self.current_file_index]
         file_path = os.path.join(self.folder_path, current_file)
+        self.music_player.unload() # 파일 재생을 중지하고 파일을 닫음
         os.remove(file_path)
         self.current_file_index += 1
         self.update_file_label()
