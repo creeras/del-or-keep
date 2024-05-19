@@ -8,7 +8,7 @@ class FileReviewApp:
     def __init__(self, root):
         self.root = root
         self.root.title("File Review App")
-        self.root.geometry("800x500")
+        self.root.geometry("800x600")  # 창 크기 조정
         self.root.resizable(False, False)  # 창 크기 고정
 
         self.folder_path = ""
@@ -19,28 +19,31 @@ class FileReviewApp:
         self.music_player = pygame.mixer.music
 
         self.label = tk.Label(root, text="Select a folder to start", font=("Helvetica", 32))
-        self.label.place(relx=0.5, rely=0.1, anchor="center")
+        self.label.place(relx=0.5, rely=0.05, anchor="center")  # 위치 조정
 
-        self.select_folder_button = tk.Button(root, text="Select Folder", command=self.select_folder, font=("Helvetica", 24))
-        self.select_folder_button.place(relx=0.5, rely=0.2, anchor="center")
+        self.select_folder_button = tk.Button(root, text="Select Folder", command=self.select_folder, font=("Helvetica", 20), width=15)
+        self.select_folder_button.place(relx=0.5, rely=0.15, anchor="center")  # 위치 조정
+
+        self.separator = tk.Frame(root, height=2, bd=1, relief="groove")
+        self.separator.place(relx=0.5, rely=0.25, anchor="center", relwidth=0.9)
+
+        self.previous_button = tk.Button(root, text="Previous File", command=self.go_back, state=tk.DISABLED, font=("Helvetica", 20), width=15)
+        self.previous_button.place(relx=0.5, rely=0.35, anchor="center")  # 위치 조정
 
         self.file_label = tk.Label(root, text="", font=("Helvetica", 28), wraplength=700, justify="center")
-        self.file_label.place(relx=0.5, rely=0.5, anchor="center")
+        self.file_label.place(relx=0.5, rely=0.55, anchor="center")  # 위치 조정
 
         button_frame = tk.Frame(root)
         button_frame.place(relx=0.5, rely=0.8, anchor="center")
 
-        self.keep_button = tk.Button(button_frame, text="Keep", command=self.keep_file, state=tk.DISABLED, font=("Helvetica", 24), width=10, height=2, bg="blue")
+        self.keep_button = tk.Button(button_frame, text="Keep", command=self.keep_file, state=tk.DISABLED, font=("Helvetica", 20), width=10, height=2, bg="blue")
         self.keep_button.grid(row=0, column=0, padx=20)
 
-        self.music_button = tk.Button(button_frame, text="Play Music", command=self.toggle_music, state=tk.DISABLED, font=("Helvetica", 24), width=10, height=2, bg="green")
+        self.music_button = tk.Button(button_frame, text="Play Music", command=self.toggle_music, state=tk.DISABLED, font=("Helvetica", 20), width=10, height=2, bg="green")
         self.music_button.grid(row=0, column=1, padx=20)
 
-        self.delete_button = tk.Button(button_frame, text="Delete", command=self.delete_file, state=tk.DISABLED, font=("Helvetica", 24), width=10, height=2, bg="red")
+        self.delete_button = tk.Button(button_frame, text="Delete", command=self.delete_file, state=tk.DISABLED, font=("Helvetica", 20), width=10, height=2, bg="red")
         self.delete_button.grid(row=0, column=2, padx=20)
-
-        self.back_button = tk.Button(button_frame, text="Back", command=self.go_back, state=tk.DISABLED, font=("Helvetica", 24), width=10, height=2, bg="yellow")
-        self.back_button.grid(row=0, column=3, padx=20)
 
     def select_folder(self):
         self.folder_path = filedialog.askdirectory()
@@ -53,7 +56,7 @@ class FileReviewApp:
                 self.keep_button.config(state=tk.NORMAL)
                 self.music_button.config(state=tk.NORMAL)
                 self.delete_button.config(state=tk.NORMAL)
-                self.back_button.config(state=tk.NORMAL)
+                self.previous_button.config(state=tk.DISABLED if self.current_file_index == 0 else tk.NORMAL)
             else:
                 messagebox.showinfo("Info", "The selected folder is empty.")
 
@@ -66,11 +69,18 @@ class FileReviewApp:
             self.keep_button.config(state=tk.DISABLED)
             self.music_button.config(state=tk.DISABLED)
             self.delete_button.config(state=tk.DISABLED)
-            self.back_button.config(state=tk.DISABLED)
+            self.previous_button.config(state=tk.DISABLED)
 
     def keep_file(self):
         self.current_file_index += 1
         self.update_file_label()
+        self.previous_button.config(state=tk.DISABLED if self.current_file_index == 0 else tk.NORMAL)
+
+    def go_back(self):
+        if self.current_file_index > 0:
+            self.current_file_index -= 1
+            self.update_file_label()
+        self.previous_button.config(state=tk.DISABLED if self.current_file_index == 0 else tk.NORMAL)
 
     def toggle_music(self):
         current_file = self.files[self.current_file_index]
@@ -89,13 +99,9 @@ class FileReviewApp:
         current_file = self.files[self.current_file_index]
         file_path = os.path.join(self.folder_path, current_file)
         os.remove(file_path)
-        self.current_file_index += 1
+        self.files.pop(self.current_file_index)
         self.update_file_label()
-
-    def go_back(self):
-        if self.current_file_index > 0:
-            self.current_file_index -= 1
-            self.update_file_label()
+        self.previous_button.config(state=tk.DISABLED if self.current_file_index == 0 else tk.NORMAL)
 
 if __name__ == "__main__":
     root = tk.Tk()
