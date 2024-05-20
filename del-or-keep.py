@@ -87,6 +87,7 @@ class FileReviewApp:
         file_path = os.path.join(self.folder_path, current_file)
         if self.music_player.get_busy():
             self.music_player.stop()
+            self.music_player.unload()  # 파일 언로드
             self.music_button.config(text="Play Music", bg="green")
         else:
             self.music_player.load(file_path)
@@ -94,14 +95,18 @@ class FileReviewApp:
             self.music_button.config(text="Stop Music", bg="orange")
 
     def delete_file(self):
-        if self.music_player.get_busy():
-            self.music_player.stop()
         current_file = self.files[self.current_file_index]
         file_path = os.path.join(self.folder_path, current_file)
-        os.remove(file_path)
-        self.files.pop(self.current_file_index)
-        self.update_file_label()
-        self.previous_button.config(state=tk.DISABLED if self.current_file_index == 0 else tk.NORMAL)
+        if self.music_player.get_busy():
+            self.music_player.stop()
+            self.music_player.unload()  # 파일 언로드
+        try:
+            os.remove(file_path)
+            self.files.pop(self.current_file_index)
+            self.update_file_label()
+            self.previous_button.config(state=tk.DISABLED if self.current_file_index == 0 else tk.NORMAL)
+        except PermissionError as e:
+            messagebox.showerror("Error", f"Failed to delete file: {str(e)}")
 
 if __name__ == "__main__":
     root = tk.Tk()
