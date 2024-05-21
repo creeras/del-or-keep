@@ -8,8 +8,8 @@ class FileReviewApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Del or Keep")
-        self.root.geometry("800x600")  # 창 크기 조정
-        self.root.resizable(True, True)  # 창 크기 고정
+        self.root.geometry("800x600")
+        self.root.resizable(True, True)
 
         self.folder_path = ""
         self.files = []
@@ -19,19 +19,19 @@ class FileReviewApp:
         self.music_player = pygame.mixer.music
 
         self.label = tk.Label(root, text="Select a folder to start", font=("Helvetica", 32))
-        self.label.place(relx=0.5, rely=0.05, anchor="center")  # 위치 조정
+        self.label.place(relx=0.5, rely=0.05, anchor="center")
 
         self.select_folder_button = tk.Button(root, text="Select Folder", command=self.select_folder, font=("Helvetica", 20), width=15)
-        self.select_folder_button.place(relx=0.5, rely=0.15, anchor="center")  # 위치 조정
+        self.select_folder_button.place(relx=0.5, rely=0.15, anchor="center")
 
         self.separator = tk.Frame(root, height=2, bd=1, relief="groove")
         self.separator.place(relx=0.5, rely=0.25, anchor="center", relwidth=0.9)
 
         self.previous_button = tk.Button(root, text="Previous File", command=self.go_back, state=tk.DISABLED, font=("Helvetica", 20), width=15)
-        self.previous_button.place(relx=0.5, rely=0.35, anchor="center")  # 위치 조정
+        self.previous_button.place(relx=0.5, rely=0.35, anchor="center")
 
         self.file_label = tk.Label(root, text="", font=("Helvetica", 28), wraplength=700, justify="center")
-        self.file_label.place(relx=0.5, rely=0.55, anchor="center")  # 위치 조정
+        self.file_label.place(relx=0.5, rely=0.55, anchor="center")
 
         button_frame = tk.Frame(root)
         button_frame.place(relx=0.5, rely=0.8, anchor="center")
@@ -48,6 +48,7 @@ class FileReviewApp:
     def select_folder(self):
         self.folder_path = filedialog.askdirectory()
         if self.folder_path:
+            self.label.config(text=self.folder_path)  # 선택된 폴더 이름으로 라벨 텍스트 변경
             self.files = os.listdir(self.folder_path)
             self.files = [f for f in self.files if os.path.isfile(os.path.join(self.folder_path, f))]
             self.current_file_index = 0
@@ -87,7 +88,7 @@ class FileReviewApp:
         file_path = os.path.join(self.folder_path, current_file)
         if self.music_player.get_busy():
             self.music_player.stop()
-            self.music_player.unload()  # 파일 언로드
+            self.music_player.unload()
             self.music_button.config(text="Play Music", bg="green")
         else:
             self.music_player.load(file_path)
@@ -99,7 +100,7 @@ class FileReviewApp:
         file_path = os.path.join(self.folder_path, current_file)
         if self.music_player.get_busy():
             self.music_player.stop()
-            self.music_player.unload()  # 파일 언로드
+            self.music_player.unload()
         try:
             os.remove(file_path)
             self.files.pop(self.current_file_index)
