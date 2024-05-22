@@ -3,6 +3,8 @@ import shutil
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import pygame
+from mutagen.easyid3 import EasyID3
+from mutagen.id3 import ID3NoHeaderError
 
 class FileReviewApp:
     def __init__(self, root):
@@ -33,6 +35,9 @@ class FileReviewApp:
         self.file_label = tk.Label(root, text="", font=("Helvetica", 28), wraplength=700, justify="center")
         self.file_label.place(relx=0.5, rely=0.55, anchor="center")
 
+        self.artist_label = tk.Label(root, text="", font=("Helvetica", 20), wraplength=700, justify="center", fg="gray")
+        self.artist_label.place(relx=0.5, rely=0.65, anchor="center")
+
         button_frame = tk.Frame(root)
         button_frame.place(relx=0.5, rely=0.8, anchor="center")
 
@@ -48,12 +53,16 @@ class FileReviewApp:
     def select_folder(self):
         self.folder_path = filedialog.askdirectory()
         if self.folder_path:
-            self.label.config(text=self.folder_path)  # Update label with selected folder
+            self.label.config(text=self.folder_path)  # 선택된 폴더 이름으로 라벨 텍스트 변경
             self.files = os.listdir(self.folder_path)
             self.files = [f for f in self.files if os.path.isfile(os.path.join(self.folder_path, f))]
             self.current_file_index = 0
             if self.files:
                 self.update_file_label()
+                self.keep_button.config(state=tk.NORMAL)
+                self.music_button.config(state=tk.NORMAL)
+                self.delete_button.config(state=tk.NORMAL)
+                self.previous_button.config(state=tk.DISABLED if self.current_file_index == 0 else tk.NORMAL)
             else:
                 messagebox.showinfo("Info", "The selected folder is empty.")
 
@@ -61,25 +70,42 @@ class FileReviewApp:
         if self.current_file_index < len(self.files):
             current_file = self.files[self.current_file_index]
             self.file_label.config(text=f"File: {current_file}")
-            self.keep_button.config(state=tk.NORMAL)
-            self.music_button.config(state=tk.NORMAL)
-            self.delete_button.config(state=tk.NORMAL)
-            self.previous_button.config(state=tk.DISABLED if self.current_file_index == 0 else tk.NORMAL)
+            artist = self.get_artist_info(current_file)
+            if artist:
+                self.artist_label.config(text=f"Artist: {artist}", font=("Helvetica", int(28 * 0.7)))
+            else:
+                self.artist_label.config(text="")
         else:
             self.file_label.config(text="No more files.")
+            self.artist_label.config(text="")
             self.keep_button.config(state=tk.DISABLED)
             self.music_button.config(state=tk.DISABLED)
             self.delete_button.config(state=tk.DISABLED)
-            self.previous_button.config(state=tk.NORMAL if self.current_file_index > 0 else tk.DISABLED)
+            self.previous_button.config(state=tk.DISABLED)
+
+    def get_artist_info(self, filename):
+        file_path = os.path.join(self.folder_path, filename)
+        if filename.lower().endswith('.mp3'):
+            try:
+                audio = EasyID3(file_path)
+                return audio.get('artist', [None])[0]
+            except ID3NoHeaderError:
+                return None
+        return None
 
     def keep_file(self):
         self.current_file_index += 1
         self.update_file_label()
+        self.previous_button.config(state=tk.DISABLED if self.current_file_index == 0 else tk.NORMAL)
 
     def go_back(self):
         if self.current_file_index > 0:
             self.current_file_index -= 1
             self.update_file_label()
+        self.previous_button.config(state=tk.DISABLED if self.current_file_index == 0 else tk.NORMAL)
+        self.keep_button.config(state=tk.NORMAL)
+        self.music_button.config(state=tk.NORMAL)
+        self.delete_button.config(state=tk.NORMAL)
 
     def toggle_music(self):
         current_file = self.files[self.current_file_index]
@@ -89,12 +115,9 @@ class FileReviewApp:
             self.music_player.unload()
             self.music_button.config(text="Play Music", bg="green")
         else:
-            try:
-                self.music_player.load(file_path)
-                self.music_player.play()
-                self.music_button.config(text="Stop Music", bg="orange")
-            except pygame.error:
-                messagebox.showerror("Error", "This file cannot be played as music.")
+            self.music_player.load(file_path)
+            self.music_player.play()
+            self.music_button.config(text="Stop Music", bg="orange")
 
     def delete_file(self):
         current_file = self.files[self.current_file_index]
@@ -106,6 +129,7 @@ class FileReviewApp:
             os.remove(file_path)
             self.files.pop(self.current_file_index)
             self.update_file_label()
+            self.previous_button.config(state=tk.DISABLED if self.current_file_index == 0 else tk.NORMAL)
         except PermissionError as e:
             messagebox.showerror("Error", f"Failed to delete file: {str(e)}")
 
